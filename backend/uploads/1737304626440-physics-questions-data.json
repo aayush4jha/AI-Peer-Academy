@@ -1,0 +1,229 @@
+{
+  "questions": [
+    {
+      "questionText": "What is the formula for momentum?",
+      "options": [
+        { "optionText": "p = mv", "isCorrect": true },
+        { "optionText": "p = m/v", "isCorrect": false },
+        { "optionText": "p = v/m", "isCorrect": false },
+        { "optionText": "p = m²v", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "In a perfectly elastic collision, what is conserved?",
+      "options": [
+        { "optionText": "Only momentum", "isCorrect": false },
+        { "optionText": "Only kinetic energy", "isCorrect": false },
+        { "optionText": "Both momentum and kinetic energy", "isCorrect": true },
+        { "optionText": "Neither momentum nor kinetic energy", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the SI unit of force?",
+      "options": [
+        { "optionText": "Joule", "isCorrect": false },
+        { "optionText": "Newton", "isCorrect": true },
+        { "optionText": "Pascal", "isCorrect": false },
+        { "optionText": "Watt", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "According to Newton's Second Law, force equals:",
+      "options": [
+        { "optionText": "Mass times velocity", "isCorrect": false },
+        { "optionText": "Mass times acceleration", "isCorrect": true },
+        { "optionText": "Mass divided by acceleration", "isCorrect": false },
+        { "optionText": "Velocity times acceleration", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What happens to the momentum of an object if its velocity doubles?",
+      "options": [
+        { "optionText": "Doubles", "isCorrect": true },
+        { "optionText": "Halves", "isCorrect": false },
+        { "optionText": "Quadruples", "isCorrect": false },
+        { "optionText": "Remains the same", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is impulse equal to?",
+      "options": [
+        { "optionText": "Change in velocity", "isCorrect": false },
+        { "optionText": "Change in momentum", "isCorrect": true },
+        { "optionText": "Change in acceleration", "isCorrect": false },
+        { "optionText": "Change in mass", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "A force of 10 N acts on a 2 kg mass. What is its acceleration?",
+      "options": [
+        { "optionText": "5 m/s²", "isCorrect": true },
+        { "optionText": "20 m/s²", "isCorrect": false },
+        { "optionText": "2 m/s²", "isCorrect": false },
+        { "optionText": "8 m/s²", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is the correct unit for work?",
+      "options": [
+        { "optionText": "Joule", "isCorrect": true },
+        { "optionText": "Newton", "isCorrect": false },
+        { "optionText": "Watt", "isCorrect": false },
+        { "optionText": "Pascal", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which is the correct formula for kinetic energy?",
+      "options": [
+        { "optionText": "KE = ½ mv²", "isCorrect": true },
+        { "optionText": "KE = mv", "isCorrect": false },
+        { "optionText": "KE = ½ m²v", "isCorrect": false },
+        { "optionText": "KE = mgh", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the acceleration due to gravity on Earth?",
+      "options": [
+        { "optionText": "9.8 m/s²", "isCorrect": true },
+        { "optionText": "9.8 km/h²", "isCorrect": false },
+        { "optionText": "10 m/s²", "isCorrect": false },
+        { "optionText": "8.9 m/s²", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the formula for force?",
+      "options": [
+        { "optionText": "F = ma", "isCorrect": true },
+        { "optionText": "F = mv", "isCorrect": false },
+        { "optionText": "F = m/v", "isCorrect": false },
+        { "optionText": "F = m²a", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following describes an object in free fall?",
+      "options": [
+        { "optionText": "It experiences a downward acceleration due to gravity.", "isCorrect": true },
+        { "optionText": "It moves with constant speed.", "isCorrect": false },
+        { "optionText": "Its velocity is zero.", "isCorrect": false },
+        { "optionText": "It has no weight.", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is true for an object moving in a circle at constant speed?",
+      "options": [
+        { "optionText": "The object has a centripetal acceleration.", "isCorrect": true },
+        { "optionText": "The object is not accelerating.", "isCorrect": false },
+        { "optionText": "The object's speed is decreasing.", "isCorrect": false },
+        { "optionText": "The object's velocity is constant.", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the total mechanical energy of an object in free fall at its highest point?",
+      "options": [
+        { "optionText": "All energy is potential.", "isCorrect": true },
+        { "optionText": "All energy is kinetic.", "isCorrect": false },
+        { "optionText": "There is no energy.", "isCorrect": false },
+        { "optionText": "The energy is evenly split between potential and kinetic.", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is true about an object's motion when it reaches terminal velocity?",
+      "options": [
+        { "optionText": "The object's acceleration becomes zero.", "isCorrect": true },
+        { "optionText": "The object is still accelerating.", "isCorrect": false },
+        { "optionText": "The object is moving faster.", "isCorrect": false },
+        { "optionText": "The object's speed decreases.", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is the correct unit for power?",
+      "options": [
+        { "optionText": "Watt", "isCorrect": true },
+        { "optionText": "Joule", "isCorrect": false },
+        { "optionText": "Newton", "isCorrect": false },
+        { "optionText": "Pascal", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the formula for gravitational potential energy?",
+      "options": [
+        { "optionText": "PE = mgh", "isCorrect": true },
+        { "optionText": "PE = mv²", "isCorrect": false },
+        { "optionText": "PE = ½ mv²", "isCorrect": false },
+        { "optionText": "PE = ma", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the relationship between work and energy?",
+      "options": [
+        { "optionText": "Work is the transfer of energy.", "isCorrect": true },
+        { "optionText": "Work is the force applied over distance.", "isCorrect": false },
+        { "optionText": "Energy is the ability to do work.", "isCorrect": false },
+        { "optionText": "They are unrelated.", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is a scalar quantity?",
+      "options": [
+        { "optionText": "Speed", "isCorrect": true },
+        { "optionText": "Velocity", "isCorrect": false },
+        { "optionText": "Acceleration", "isCorrect": false },
+        { "optionText": "Force", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is a vector quantity?",
+      "options": [
+        { "optionText": "Velocity", "isCorrect": true },
+        { "optionText": "Speed", "isCorrect": false },
+        { "optionText": "Mass", "isCorrect": false },
+        { "optionText": "Energy", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "The formula for work is:",
+      "options": [
+        { "optionText": "W = Fd cos(θ)", "isCorrect": true },
+        { "optionText": "W = Fd", "isCorrect": false },
+        { "optionText": "W = mgh", "isCorrect": false },
+        { "optionText": "W = mv²", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the formula for acceleration?",
+      "options": [
+        { "optionText": "a = Δv/Δt", "isCorrect": true },
+        { "optionText": "a = v/t", "isCorrect": false },
+        { "optionText": "a = Δx/Δt", "isCorrect": false },
+        { "optionText": "a = v²/t", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which law explains the motion of an object based on the force applied?",
+      "options": [
+        { "optionText": "Newton's Second Law", "isCorrect": true },
+        { "optionText": "Newton's First Law", "isCorrect": false },
+        { "optionText": "Newton's Third Law", "isCorrect": false },
+        { "optionText": "Gravitational Law", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "What is the unit of power?",
+      "options": [
+        { "optionText": "Watt", "isCorrect": true },
+        { "optionText": "Joule", "isCorrect": false },
+        { "optionText": "Newton", "isCorrect": false },
+        { "optionText": "Ampere", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which of the following is the correct formula for acceleration?",
+      "options": [
+        { "optionText": "a = Δv/Δt", "isCorrect": true },
+        { "optionText": "a = Δx/Δt²", "isCorrect": false },
+        { "optionText": "a = v/t", "isCorrect": false },
+        { "optionText": "a = v²/t", "isCorrect": false }
+      ]
+    }
+  ]
+}
