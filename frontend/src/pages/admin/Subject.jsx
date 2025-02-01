@@ -30,8 +30,11 @@ const SubjectList = () => {
   const fetchSubjects = async () => {
     try {
       const response = await apiConnector("GET", "/dashboard");
+      console.log(response)
       setSubjects(response.data.subjects);
     } catch (error) {
+      console.log("ERRORR")
+      console.log(error)
       toast.error("Failed to fetch subjects");
     }
   };
@@ -56,6 +59,7 @@ const SubjectList = () => {
         setShowCreateForm(false);
       }
     } catch (error) {
+      console.log(error)
       toast.error("Failed to create subject");
     }
   };

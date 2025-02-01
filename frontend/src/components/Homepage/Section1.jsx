@@ -45,7 +45,7 @@ function Section1() {
             <div className="gap-6 flex">
               <p className="text-slate-600">or sign up with</p>
 
-              <GoogleSignInButton />
+              {/* <GoogleSignInButton /> */}
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { apiConnector } from "../../services/apiConnectors";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 const PaymentForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const PaymentForm = () => {
     expiryYear: "",
     cvv: "",
   });
+  const { signupData, token } = useSelector((state) => state.auth);
 
   const [errors, setErrors] = useState({});
   const [paymentLoader, setPaymentLoader] = useState(false);
@@ -92,7 +94,7 @@ const PaymentForm = () => {
         // toast.loading("Processing your payment...", { duration: 3000 });
 
         const paymentPayload = {
-          email: "amanraz2802@gmail.com", // You'll need to pass the user's email
+          email: signupData.email, // You'll need to pass the user's email
           cardNumber: formData.cardNumber,
           cardName: formData.cardName,
           expiryMonth: formData.expiryMonth,

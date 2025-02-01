@@ -9,19 +9,20 @@ import { useSelector } from "react-redux";
 function GoogleSignInButton() {
   const dispatch = useDispatch();
   const handleLoginSuccess = async (response) => {
+    console.log(response)
     const token = response.credential; // Google login token
     try {
-      const response = await authenticateWithGoogle(token);
-      // console.log(response);
-      // console.log(response.data.token);
+      const res = await authenticateWithGoogle(token);
+      console.log(res);
+      // console.log(res.data.token);
 
       // Store in localStorage
-      localStorage.setItem("token", JSON.stringify(response.data.token));
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("token", JSON.stringify(res.data.token));
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       // Update Redux state
-      dispatch(setToken(response.data.token));
-      dispatch(setSignupData(response.data.user));
+      dispatch(setToken(res.data.token));
+      dispatch(setSignupData(res.data.user));
     } catch (error) {
       console.error("Login error:", error);
     }

@@ -16,13 +16,13 @@ const store = configureStore({
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <GoogleOAuthProvider clientId={googleClientId}>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <Provider store={store}>
+        <BrowserRouter>
           <App />
           <Toaster />
-        </GoogleOAuthProvider>
-      </BrowserRouter>
-    </Provider>
+        </BrowserRouter>
+      </Provider>
+    </GoogleOAuthProvider>
   </StrictMode>
 );

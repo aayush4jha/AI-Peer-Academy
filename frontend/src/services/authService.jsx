@@ -2,8 +2,8 @@ import axios from "axios";
 
 export const authenticateWithGoogle = async (token) => {
   try {
-    const response = await axios.post("http://localhost:4000/api/auth/google", {
-      token,
+    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/google`, {
+      token
     });
     // console.log(response, token);
     return response;

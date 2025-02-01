@@ -111,7 +111,7 @@ const CourseDetail = () => {
     resetQuizData(signupData?.googleId, selectedSubModuleId);
     setConfirmationModal(false); // Close modal after confirming
     if (selectedSubModuleId) {
-      navigate(`/course/module/${selectedSubModuleId}`); // Navigate to selected submodule
+      navigate(`/course/${subject.id}/${selectedSubModuleId}`); // Navigate to selected submodule
     }
   };
 
@@ -258,3 +258,5 @@ const CourseDetail = () => {
 };
 
 export default CourseDetail;
+
+

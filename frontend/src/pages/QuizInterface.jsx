@@ -11,6 +11,7 @@ const QuizInterface = () => {
   const location = useLocation();
   const { subModule_id, subjectId } = useParams();
   const submoduleId = subModule_id;
+  // console.log("here useparams", useParams())
 
   // Enhanced state management
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -43,6 +44,7 @@ const QuizInterface = () => {
           "GET",
           `/admin/submodules/${submoduleId}`
         );
+        console.log("this is the data" , response.data)
         setData(response.data.submodule.questions);
         setIsLoading(false);
       } catch (err) {
@@ -185,6 +187,8 @@ const QuizInterface = () => {
       const existingResponse = userResponses.find(
         (response) => response.questionId === question._id
       );
+
+      console.log("existingResponse", existingResponse);
 
       if (!existingResponse) {
         // Create a default response for unanswered questions
