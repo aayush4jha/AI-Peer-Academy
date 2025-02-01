@@ -24,9 +24,11 @@ database.connect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //for using postman
 app.use(cookieParser());
+
+const frontendDomain = process.env.FRONTEND_DOMAIN
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: frontendDomain,
     credentials: true
   })
 );
