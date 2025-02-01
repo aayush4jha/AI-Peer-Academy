@@ -154,6 +154,7 @@ exports.submitAnalytics = async (req, res) => {
       progress,
     } = req.body;
 
+    console.log(req.body);
     // Basic validation
     if (!googleId || !subModuleId || !questionAnswers || !subjectId) {
       // console.log("Missing required fields:", googleId, subModuleId);
@@ -164,7 +165,7 @@ exports.submitAnalytics = async (req, res) => {
     const analyticsData = new Analytics({
       googleId,
       subjectId,
-      subModuleId: new mongoose.Types.ObjectId(subModuleId), // Fix here
+      subModuleId: subModuleId,
       tagCounts,
       questionAnswers,
       totalTimeSpent,

@@ -12,3 +12,4 @@ router.get("/attempted-submodule", userController.getAttemptedSubModules);
 router.post("/submit-analytics", userController.submitAnalytics);
 router.post("/reset-quiz", userController.resetQuiz);
 module.exports = router;
+// /users/submit-analytics

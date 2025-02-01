@@ -27,9 +27,26 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true,
+    credentials: true
   })
 );
+
+const User = require("./models/User.js");
+app.use("/api/admin/*", async (req, res,next) => {
+  const { googleId } = req.body;
+
+  if (!googleId) {
+    console.log("in")
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return next()
+    }
+
+  }
+
+  res.json({ status: 400, message: "Not an authorized user" })
+})
 
 // app.use(
 //   fileUpload({

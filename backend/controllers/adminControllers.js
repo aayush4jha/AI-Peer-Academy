@@ -13,7 +13,7 @@ const fs = require("fs");
 exports.addSubject = async (req, res) => {
   try {
     const { name, description } = req.body;
-
+    console.log(name,description,"in add subject")
     // Validate required fields
     if (!name || name.trim() === "") {
       return res.status(400).json({ error: "Subject name is required" });
