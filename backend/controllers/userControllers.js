@@ -200,28 +200,30 @@ exports.submitAnalytics = async (req, res) => {
     }
 
     // Create a new analytics document
-    const analyticsData = new Analytics({
-      googleId,
-      subjectId,
-      subModuleId: subModuleId,
-      tagCounts,
-      questionAnswers,
-      totalTimeSpent,
-      correctAnswers,
-      incorrectAnswers,
-      progress,
-      updatedAt: new Date(),
-      isCompleted: true
-    });
-
+    // const analyticsData = new Analytics({
+    //   googleId,
+    //   subjectId,
+    //   subModuleId: subModuleId,
+    //   tagCounts,
+    //   questionAnswers,
+    //   totalTimeSpent,
+    //   correctAnswers,
+    //   incorrectAnswers,
+    //   progress,
+    //   updatedAt: new Date(),
+    //   isCompleted: true
+    // });
+    // await analyticsData.save();
+    
+    const prevAnalytics = await Analytics.findOneAndUpdate({ googleId, subModuleId },{isCompleted:true,tagCounts,questionAnswers,totalTimeSpent,correctAnswers,incorrectAnswers,progress,updatedAt:new Date()},{new:true});
+    
     // Save the analytics data to the database
-    await analyticsData.save();
     // console.log("Analytics data saved successfully:", analyticsData);
-
+    
     // Respond with success
     res.status(200).json({
       message: "Analytics data submitted successfully",
-      data: analyticsData,
+      data: prevAnalytics,
     });
   } catch (error) {
     // Error handling

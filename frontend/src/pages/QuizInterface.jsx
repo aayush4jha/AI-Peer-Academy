@@ -292,8 +292,20 @@ const QuizInterface = () => {
     try {
       // Save the current question's response first
       saveResponse();
+      const qID = data[currentQuestionIndex]._id;
+      const res = await apiConnector("POST", `/users/questions/${qID}/attempt`, {
+        subModuleId:submoduleId, userAnswer: {
+          questionId: qID,
+          userAnswer: answers[qID]?.optionId || null,
+          isCorrect: answers[qID]?.isCorrect || false,
+          timeSpent: questionTimer,
+          notes,
+          importance,
+          timestamp: new Date().toISOString(),
+        },subjectId,googleId
+      })
 
-      // Make sure we have responses for all questions
+      // // Make sure we have responses for all questions
       data.forEach((_, index) => {
         if (index !== currentQuestionIndex) {
           saveResponse(index);

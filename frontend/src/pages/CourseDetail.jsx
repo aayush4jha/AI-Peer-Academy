@@ -32,6 +32,7 @@ const CourseDetail = () => {
   const { subject, modules, totalModules } = useSelector(
     (state) => state.viewCourse
   );
+  console.log("this is odkes" , modules)
   const { signupData } = useSelector((state) => state.auth);
   const googleId = signupData?.googleId;
   const [randomItem] = useState(() => {
@@ -48,6 +49,7 @@ const CourseDetail = () => {
     const fetchCourseDetails = async () => {
       try {
         const response = await apiConnector("GET", `/courses/${courseName}`);
+        console.log(response)
         dispatch(setSubjectData(response.data.subject));
         dispatch(setModulesData(response.data.modules));
         dispatch(setTotalModules(response.data.totalModules));
@@ -225,7 +227,7 @@ const CourseDetail = () => {
                       {/* Retry Button (Triggers the modal) */}
                       {attemptedList.find((sub) => sub.id == subModule.id) && (
                         <div className="flex items-center gap-3">
-                          {attemptedList.find((sub) => sub.id == subModule.id).isCompleted ? <button
+                          {attemptedList.find((sub) => sub.id === subModule.id).isCompleted ? <button
                             onClick={() => {
                               setSelectedSubModuleId(subModule.id); // Store the submodule ID
                               setConfirmationModal(true); // Show the modal
