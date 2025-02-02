@@ -36,6 +36,7 @@ const analyticsSchema = new mongoose.Schema({
   incorrectAnswers: { type: Number, default: 0 },
   progress: { type: Number, default: 0 },
   updatedAt: { type: Date, default: Date.now },
+  isCompleted : { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model("Analytics", analyticsSchema);

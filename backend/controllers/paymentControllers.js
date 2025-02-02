@@ -31,7 +31,7 @@ exports.processPayment = async (req, res) => {
         failed: true,
       });
     }
-    user.isSubscribed = true;
+    // user.isSubscribed = true;
     await user.save();
 
     res.status(200).json({

@@ -7,6 +7,7 @@ router.post("/questions/:id/attempt", userController.submitAnswer);
 router.put("/questions/:id/note", userController.addNote);
 router.put("/questions/:id/tag", userController.addTag);
 router.get("/analytics", userController.getAnalyticsData);
+router.get("/analytics/answers", userController.getAnalyticsAnswers);
 router.get("/attempted-submodule", userController.getAttemptedSubModules);
 
 router.post("/submit-analytics", userController.submitAnalytics);

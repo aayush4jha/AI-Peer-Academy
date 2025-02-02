@@ -33,6 +33,7 @@ exports.resetQuiz = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.getAttemptedSubModules = async (req, res) => {
   try {
     const { googleId, subjectId } = req.query;
@@ -42,14 +43,14 @@ exports.getAttemptedSubModules = async (req, res) => {
     }
     // Find the analytics data by googleId and subjectId
     const analytics = await Analytics.find({ googleId, subjectId });
-    console.log("data mil gya");
+    console.log("data mil gya",analytics);
     // if (!analytics) {
     //   return res.status(404).json({ message: "Analytics data not found" });
     //   }
     // Get the attempted submodules from the analytics data
     attemptedSubmodules = [];
     analytics.forEach((data) => {
-      attemptedSubmodules.push(data.subModuleId);
+      attemptedSubmodules.push({ id: data.subModuleId, isCompleted: data?.isCompleted });
     });
     console.log("attempted submodules mil gya");
     res.status(200).json({ attemptedSubmodules });
@@ -58,8 +59,10 @@ exports.getAttemptedSubModules = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.getAnalyticsData = async (req, res) => {
   try {
+    console.log("get analytics ke andar aa gya");
     const { googleId, subModuleId } = req.query; // Access query parameters
     console.log("Google ID: in get analytics dadta", googleId);
     console.log("Submodule ID:", subModuleId);
@@ -139,6 +142,41 @@ exports.getAnalyticsData = async (req, res) => {
   }
 };
 
+exports.getAnalyticsAnswers = async (req, res) => {
+  try {
+    console.log("get analytics ke andar aa gya");
+    const { googleId, subModuleId } = req.query; // Access query parameters
+    console.log("Google ID: in get analytics dadta", googleId);
+    console.log("Submodule ID:", subModuleId);
+
+    // Validate input
+    if (!googleId || !subModuleId) {
+      console.log(googleId, subModuleId, " get analytics ke andar");
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Fetch the analytics data
+    const analyticsData = await Analytics.findOne({
+      googleId,
+      subModuleId: new mongoose.Types.ObjectId(subModuleId),
+    }).populate("questionAnswers.questionId"); // Populate question details
+
+    if (!analyticsData) {
+      return res.json({ isAttempted:false,message: "No analytics data found" });
+    }
+    res.json({
+      isAttempted:true,
+      answers:analyticsData.questionAnswers,
+    });
+  } catch (error) {
+    console.error("Error fetching analytics data:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 /// Controller function to handle analytics submission
 exports.submitAnalytics = async (req, res) => {
   try {
@@ -173,6 +211,7 @@ exports.submitAnalytics = async (req, res) => {
       incorrectAnswers,
       progress,
       updatedAt: new Date(),
+      isCompleted: true
     });
 
     // Save the analytics data to the database
@@ -215,12 +254,14 @@ exports.getSubmoduleQuestions = async (req, res) => {
 exports.submitAnswer = async (req, res) => {
   try {
     const { id } = req.params; // Question ID
-    const { userId, subModuleId, userAnswer } = req.body;
+    const { subModuleId, userAnswer, googleId, subjectId } = req.body;
+    console.log(userAnswer, id, subModuleId, googleId, subModuleId)
 
     // Find or create analytics record
-    let analytics = await Analytics.findOne({ userId, subModuleId });
+    let analytics = await Analytics.findOne({ googleId, subModuleId });
+    console.log(analytics)
     if (!analytics) {
-      analytics = new Analytics({ userId, subModuleId, questionAnswers: [] });
+      analytics = new Analytics({ googleId, subjectId, subModuleId, questionAnswers: [] });
     }
 
     // Update or add question answer
@@ -228,14 +269,18 @@ exports.submitAnswer = async (req, res) => {
       (q) => q.questionId.toString() === id
     );
     if (existingAnswer) {
-      existingAnswer.userAnswer = userAnswer;
+      analytics.questionAnswers = analytics.questionAnswers.map(
+        (q) => q.questionId.toString() === id ? userAnswer : q
+      );
+      console.log("prev is answer", existingAnswer)
     } else {
-      analytics.questionAnswers.push({ questionId: id, userAnswer });
+      analytics.questionAnswers.push(userAnswer);
     }
 
     await analytics.save();
     res.json({ message: "Answer submitted successfully" });
   } catch (error) {
+    console.log(error)
     res
       .status(500)
       .json({ error: "Error submitting answer", details: error.message });
