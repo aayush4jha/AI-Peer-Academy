@@ -42,6 +42,7 @@ const CourseDetail = () => {
   const [attemptedList, setAttemptedList] = useState([]);
   const [confirmationModal, setConfirmationModal] = useState(false);
   const [selectedSubModuleId, setSelectedSubModuleId] = useState(null);
+  const [allAnalytics, setAllAnalytics] = useState([]);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -120,7 +121,7 @@ const CourseDetail = () => {
       {/* Modal with blur effect on background */}
       {confirmationModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 backdrop-blur-md z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+          {attemptedList.find((sub) => sub.id == selectedSubModuleId).isCompleted ? <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
             <p className="text-xl mb-4">
               Are you sure you want to attempt this quiz?
             </p>
@@ -139,7 +140,27 @@ const CourseDetail = () => {
                 Cancel
               </button>
             </div>
-          </div>
+          </div> :
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+              <p className="text-xl mb-4">
+                Start Again?
+              </p>
+              <p className="mb-6 text-red-500">Complete previous.</p>
+              <div className="flex justify-between">
+                <button
+                onClick={() => navigate(`/course/${subject.id}/${selectedSubModuleId}`)}
+                className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
+                >
+                  Attempt
+                </button>
+                <button
+                  onClick={() => setConfirmationModal(false)}
+                  className="bg-gray-300 text-gray-700 p-2 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>}
         </div>
       )}
 
@@ -190,22 +211,21 @@ const CourseDetail = () => {
                         <span className="font-medium">{subModule.name}</span>
                         <span
                           className={`w-16
- justify-center flex text-white font-semibold rounded-2xl text-xs p-1 ml-3 ${
-   subModule.difficulty === "easy"
-     ? "bg-green-500"
-     : subModule.difficulty === "medium"
-     ? "bg-yellow-500"
-     : "bg-red-400"
- }`}
+ justify-center flex text-white font-semibold rounded-2xl text-xs p-1 ml-3 ${subModule.difficulty === "easy"
+                              ? "bg-green-500"
+                              : subModule.difficulty === "medium"
+                                ? "bg-yellow-500"
+                                : "bg-red-400"
+                            }`}
                         >
                           {subModule.difficulty}
                         </span>
                       </div>
                       {/*  attemptedList.includes{subModule.id} */}
                       {/* Retry Button (Triggers the modal) */}
-                      {attemptedList.includes(subModule.id) && (
+                      {attemptedList.find((sub) => sub.id == subModule.id) && (
                         <div className="flex items-center gap-3">
-                          <button
+                          {attemptedList.find((sub) => sub.id == subModule.id).isCompleted ? <button
                             onClick={() => {
                               setSelectedSubModuleId(subModule.id); // Store the submodule ID
                               setConfirmationModal(true); // Show the modal
@@ -214,7 +234,18 @@ const CourseDetail = () => {
                             <div className="bg-blue-800 rounded-xl p-2 text-white">
                               Retry
                             </div>
-                          </button>
+                          </button> :
+                            <button
+                              onClick={() => {
+                                setSelectedSubModuleId(subModule.id); // Store the submodule ID
+                                setConfirmationModal(true); // Show the modal
+                              }}
+                            >
+                              <div className="bg-blue-800 rounded-xl p-2 text-white">
+                                Complete
+                              </div>
+                            </button>
+                          }
                           <Link to={`/courses/view-stats/${subModule.id}`}>
                             <div className="bg-blue-800 rounded-xl p-2 text-white">
                               View Stats
@@ -222,10 +253,10 @@ const CourseDetail = () => {
                           </Link>
                         </div>
                       )}
-                      {!attemptedList.includes(subModule.id) && (
+                      {!attemptedList.find((sub) => sub.id == subModule.id) && (
                         <div className="flex items-center gap-3">
                           {signupData.isSubscribed === false &&
-                          subModule.isPro === true ? (
+                            subModule.isPro === true ? (
                             <div
                               onClick={() =>
                                 toast.error(

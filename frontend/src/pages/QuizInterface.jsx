@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import QuizCompletionScreen from "./QuizCompletionScreen";
 import toast from "react-hot-toast";
+import axios from "axios";
 // import toast from "react-hot-toast";
 
 const QuizInterface = () => {
@@ -34,6 +35,42 @@ const QuizInterface = () => {
   const [isQuizCompleted, setIsQuizCompleted] = useState(false);
   const { signupData } = useSelector((state) => state.auth);
   // const userId = signupData.userId;
+  useEffect (() => console.log(data),[data])
+
+  useEffect(() => {
+      const fetchAttemptedSubModules = async () => {
+        try {
+          const response = await apiConnector(
+            "GET",
+            `users/analytics/answers/?googleId=${googleId}&subModuleId=${submoduleId}`
+          );
+
+          console.log(response.data, "yeh rha data");
+
+          if(response.data?.isAttempted){
+            const userResponses = response.data?.answers;
+            setAnswers(() => {
+              const pastAnswers = {};
+              userResponses.forEach((answer) => {
+                if(answer.userAnswer){pastAnswers[answer.questionId._id] = {
+                  optionId: answer.userAnswer,
+                  isCorrect: answer.isCorrect,
+                };}
+              })
+
+              return pastAnswers;
+            });
+          }
+          // console.log(response.data?.attemptedSubmodules);
+          // setAttemptedList(() => [...response.data?.attemptedSubmodules]);
+        } catch (err) {
+          console.error("Error fetching course details:", err);
+        }
+      };
+      fetchAttemptedSubModules();
+      // console.log(attemptedList, "yeh rha list");
+    }, []);
+
   const googleId = signupData.googleId;
 
   useEffect(() => {
@@ -44,7 +81,7 @@ const QuizInterface = () => {
           "GET",
           `/admin/submodules/${submoduleId}`
         );
-        console.log("this is the data" , response.data)
+        console.log("this is the data", response.data)
         setData(response.data.submodule.questions);
         setIsLoading(false);
       } catch (err) {
@@ -157,9 +194,21 @@ const QuizInterface = () => {
     });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestionIndex < data.length - 1) {
       saveResponse();
+      const qID = data[currentQuestionIndex]._id;
+      const res = await apiConnector("POST", `/users/questions/${qID}/attempt`, {
+        subModuleId:submoduleId, userAnswer: {
+          questionId: qID,
+          userAnswer: answers[qID]?.optionId || null,
+          isCorrect: answers[qID]?.isCorrect || false,
+          timeSpent: questionTimer,
+          notes,
+          importance,
+          timestamp: new Date().toISOString(),
+        },subjectId,googleId
+      })
       setCurrentQuestionIndex((prev) => prev + 1);
       const nextQuestion = data[currentQuestionIndex + 1];
       const savedAnswer = answers[nextQuestion._id];
@@ -311,11 +360,10 @@ const QuizInterface = () => {
           ].map((index, i) => (
             <div
               key={i}
-              className={`w-12 h-12 rounded-full flex items-center font-bold justify-center  ${
-                index === currentQuestionIndex
-                  ? "bg-black text-white scale-125 "
-                  : "bg-gray-300 text-white"
-              }`}
+              className={`w-12 h-12 rounded-full flex items-center font-bold justify-center  ${index === currentQuestionIndex
+                ? "bg-black text-white scale-125 "
+                : "bg-gray-300 text-white"
+                }`}
             >
               {index + 1}
             </div>
@@ -325,9 +373,8 @@ const QuizInterface = () => {
         {/* Animation Overlay */}
         {showAnimation && (
           <div
-            className={`fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity ${
-              showAnimation ? "opacity-100" : "opacity-0"
-            }`}
+            className={`fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity ${showAnimation ? "opacity-100" : "opacity-0"
+              }`}
           >
             <div className={`text-8xl animate-bounce`}>
               {isCorrect ? "🎉" : "😔"}
@@ -356,13 +403,12 @@ const QuizInterface = () => {
               return (
                 <button
                   key={option._id}
-                  className={`w-full p-4 text-left rounded-lg border transition-all ${
-                    isSelected
-                      ? showCorrectness && (isCorrect || savedAnswer?.isCorrect)
-                        ? "bg-green-500 text-white border-green-600"
-                        : "bg-red-500 text-white border-red-600"
-                      : "bg-white hover:bg-gray-50 border-gray-300"
-                  }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-all ${isSelected
+                    ? showCorrectness && (isCorrect || savedAnswer?.isCorrect)
+                      ? "bg-green-500 text-white border-green-600"
+                      : "bg-red-500 text-white border-red-600"
+                    : "bg-white hover:bg-gray-50 border-gray-300"
+                    }`}
                   onClick={() => handleOptionSelect(option._id)}
                   disabled={savedAnswer !== undefined}
                 >
@@ -375,31 +421,28 @@ const QuizInterface = () => {
           {/* Importance Markers */}
           <div className="flex justify-center space-x-4 mt-6">
             <button
-              className={`px-4 py-2 rounded-lg flex items-center ${
-                importance === "bad"
-                  ? "bg-red-500 text-white"
-                  : "bg-white border border-gray-300 hover:bg-gray-50"
-              }`}
+              className={`px-4 py-2 rounded-lg flex items-center ${importance === "bad"
+                ? "bg-red-500 text-white"
+                : "bg-white border border-gray-300 hover:bg-gray-50"
+                }`}
               onClick={() => setImportance("bad")}
             >
               <span className="mr-2">🚫</span> Bad
             </button>
             <button
-              className={`px-4 py-2 rounded-lg flex items-center ${
-                importance === "ok"
-                  ? "bg-green-500 text-white"
-                  : "bg-white border border-gray-300 hover:bg-gray-50"
-              }`}
+              className={`px-4 py-2 rounded-lg flex items-center ${importance === "ok"
+                ? "bg-green-500 text-white"
+                : "bg-white border border-gray-300 hover:bg-gray-50"
+                }`}
               onClick={() => setImportance("ok")}
             >
               <span className="mr-2">👍</span> OK
             </button>
             <button
-              className={`px-4 py-2 rounded-lg flex items-center ${
-                importance === "important"
-                  ? "bg-yellow-500 text-white"
-                  : "bg-white border border-gray-300 hover:bg-gray-50"
-              }`}
+              className={`px-4 py-2 rounded-lg flex items-center ${importance === "important"
+                ? "bg-yellow-500 text-white"
+                : "bg-white border border-gray-300 hover:bg-gray-50"
+                }`}
               onClick={() => setImportance("important")}
             >
               <span className="mr-2">⭐</span> Important
@@ -418,11 +461,10 @@ const QuizInterface = () => {
           {/* Navigation Buttons */}
           <div className="flex justify-between w-full mt-2">
             <button
-              className={`px-6 w-full py-4 rounded-lg justify-center font-bold flex items-center ${
-                currentQuestionIndex === 0
-                  ? "bg-gray-200 text-gray-700 cursor-not-allowed"
-                  : "bg-gray-300 border border-gray-500 hover:bg-gray-50"
-              }`}
+              className={`px-6 w-full py-4 rounded-lg justify-center font-bold flex items-center ${currentQuestionIndex === 0
+                ? "bg-gray-200 text-gray-700 cursor-not-allowed"
+                : "bg-gray-300 border border-gray-500 hover:bg-gray-50"
+                }`}
               onClick={handlePrevious}
               disabled={currentQuestionIndex === 0}
             >
