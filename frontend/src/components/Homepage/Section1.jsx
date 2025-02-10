@@ -42,10 +42,9 @@ function Section1() {
             </form>
 
             {/* Sign in with Google */}
-            <div className="gap-6 flex">
-              <p className="text-slate-600">or sign up with</p>
-
-              {/* <GoogleSignInButton /> */}
+            <div className="gap-2 items-center  md:justify-start justify-center flex">
+              <p className="text-slate-600 text-bold">or </p>
+              <GoogleSignInButton />
             </div>
           </div>
 

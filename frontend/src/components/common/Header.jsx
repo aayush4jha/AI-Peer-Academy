@@ -50,7 +50,7 @@ function Header() {
   const AuthButtons = () => (
     <>
       {!signupData && (
-        <div className="w-full md:w-24">
+        <div className="md:w-24 max-w-max">
           <GoogleSignInButton text="Login" />
         </div>
       )}
