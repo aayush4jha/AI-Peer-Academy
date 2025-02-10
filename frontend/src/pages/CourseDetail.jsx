@@ -244,7 +244,7 @@ const CourseDetail = () => {
                               }}
                             >
                               <div className="bg-blue-800 rounded-xl p-2 text-white">
-                                Complete
+                                Resume
                               </div>
                             </button>
                           }
