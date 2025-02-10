@@ -57,14 +57,17 @@ const QuizInterface = () => {
         <div className="grid grid-cols-3 gap-2 mb-4">
           {data.map((question, index) => {
             const isAnswered = answers[question._id];
-            let bgColor = "bg-blue-500" // Unattempted
+            let bgColor = "bg-blue-500"; // Unattempted
             let attempts = 0;
-  
+    
             if (isAnswered) {
               bgColor = isAnswered.isCorrect ? "bg-green-500" : "bg-red-500";
               attempts = isAnswered.attempts || 0;
             }
-  
+    
+            const isCurrentQuestion = index === currentQuestionIndex;
+            const borderStyle = isCurrentQuestion ? "border-4 border-yellow-500" : "";
+    
             return (
               <div key={question._id} className="relative">
                 <button
@@ -76,17 +79,12 @@ const QuizInterface = () => {
                     setSelectedOption(savedAnswer?.optionId || null);
                     setIsCorrect(savedAnswer?.isCorrect || null);
                   }}
-                  className={`w-10 h-10 ${bgColor} text-white rounded-lg flex items-center justify-center hover:opacity-80 transition-opacity`}
+                  className={`w-10 h-10 ${bgColor} ${borderStyle} text-white rounded-lg flex items-center justify-center hover:opacity-80 transition-opacity`}
                 >
                   {index + 1}
                 </button>
-                {/* {attempts > 0 && (
-                  <span className="absolute top-0 right-0 bg-yellow-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                   
-                  </span>
-                )} */}
               </div>
-            )
+            );
           })}
         </div>
         <div className="border-t pt-4 space-y-2 text-sm">
@@ -105,70 +103,84 @@ const QuizInterface = () => {
         </div>
       </div>
     );
+    
   };
 
   useEffect(() => {
-    const fetchAttemptedSubModules = async () => {
-      try {
-        const response = await apiConnector(
-          "GET",
-          `users/analytics/answers/?googleId=${googleId}&subModuleId=${submoduleId}`
-        );
-  
-        if(response.data?.isAttempted){
-          const userResponses = response.data?.answers;
-          let lastIndex = 0;
-          
-          setAnswers(() => {
-            const pastAnswers = {};
-            userResponses.forEach((answer, index) => {
-              if(answer.userAnswer) {
-                pastAnswers[answer.questionId._id] = {
-                  optionId: answer.userAnswer,
-                  isCorrect: answer.isCorrect,
-                  attempts: 1 // Track attempts
-                };
-                
-                // If the answer was incorrect, keep track of it
-                if (!answer.isCorrect) {
-                  lastIndex = index; // Set to the last incorrect question
+      const fetchAttemptedSubModules = async () => {
+        try {
+          const response = await apiConnector(
+            "GET",
+            `users/analytics/answers/?googleId=${googleId}&subModuleId=${submoduleId}`
+          );
+    
+          if(response.data?.isAttempted){
+            const userResponses = response.data?.answers;
+            let lastIndex = 0;
+            let nextQuestionIndex = 0;
+            
+            // Update answers with past responses
+            setAnswers(() => {
+              const pastAnswers = {};
+              userResponses.forEach((answer, index) => {
+                if(answer.userAnswer) {
+                  pastAnswers[answer.questionId._id] = {
+                    optionId: answer.userAnswer,
+                    isCorrect: answer.isCorrect,
+                    attempts: 1
+                  };
+                  
+                  // Track the last attempted index
+                  lastIndex = index;
                 }
-              }
+              });
+              return pastAnswers;
             });
-            return pastAnswers;
-          });
-  
-          // Update stats based on past answers
-          const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
-          const incorrectCount = Object.keys(answers).length - correctCount;
-          
-          setStats({
-            correct: correctCount,
-            incorrect: incorrectCount
-          });
-          
-          // Prioritize returning to incorrect questions
-          const incorrectQuestionIndices = data.reduce((acc, question, index) => {
-            if (!answers[question._id]?.isCorrect) {
-              acc.push(index);
+    
+            // Update stats based on past answers
+            const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
+            const incorrectCount = Object.keys(answers).length - correctCount;
+            
+            setStats({
+              correct: correctCount,
+              incorrect: incorrectCount
+            });
+            
+            // Prioritize navigation logic
+            const attemptedQuestionIds = Object.keys(answers);
+            const unattemptedQuestionIndices = data.reduce((acc, question, index) => {
+              if (!attemptedQuestionIds.includes(question._id)) {
+                acc.push(index);
+              }
+              return acc;
+            }, []);
+    
+            // If there are unattempted questions, start from the first unattempted question
+            if (unattemptedQuestionIndices.length > 0) {
+              nextQuestionIndex = unattemptedQuestionIndices[0];
+            } else {
+              // If all questions are attempted, move to the next question
+              nextQuestionIndex = Math.min(lastIndex + 1, data.length - 1);
             }
-            return acc;
-          }, []);
-  
-          // If there are incorrect questions, start from the first incorrect question
-          if (incorrectQuestionIndices.length > 0) {
-            setCurrentQuestionIndex(incorrectQuestionIndices[0]);
-          } else {
-            setLastAttemptedIndex(lastIndex);
-            setCurrentQuestionIndex(lastIndex);
+            
+            setCurrentQuestionIndex(nextQuestionIndex);
+            
+            // Set the selected option and correctness for the current question
+            const currentQuestion = data[nextQuestionIndex];
+            const savedAnswer = answers[currentQuestion._id];
+            setSelectedOption(savedAnswer?.optionId || null);
+            setIsCorrect(savedAnswer?.isCorrect || null);
           }
+        } catch (err) {
+          console.error("Error fetching course details:", err);
         }
-      } catch (err) {
-        console.error("Error fetching course details:", err);
+      };
+  
+      // Only run this effect if data is loaded
+      if (data.length > 0) {
+        fetchAttemptedSubModules();
       }
-    };
-    fetchAttemptedSubModules();
-  }, []);
+    }, [data]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -453,11 +465,11 @@ const QuizInterface = () => {
       {/* Main content */}
       <div className="flex-1">
         <div className="max-w-3xl mx-auto relative">
-          <img
+          {/* <img
             src="../../images/vectorImg2.png"
             alt=""
             className="absolute bottom-[10px] left-[10px] w-40 h-40 lg:w-80 lg:h-80 rounded-full opacity-30 lg:opacity-50"
-          />
+          /> */}
 
           {/* Animation Overlay */}
           {showAnimation && (
