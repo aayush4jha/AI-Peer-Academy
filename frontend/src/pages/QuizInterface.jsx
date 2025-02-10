@@ -6,15 +6,12 @@ import { useNavigate } from "react-router-dom";
 import QuizCompletionScreen from "./QuizCompletionScreen";
 import toast from "react-hot-toast";
 import axios from "axios";
-// import toast from "react-hot-toast";
 
 const QuizInterface = () => {
   const location = useLocation();
   const { subModule_id, subjectId } = useParams();
   const submoduleId = subModule_id;
-  // console.log("here useparams", useParams())
 
-  // Enhanced state management
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -33,45 +30,145 @@ const QuizInterface = () => {
   });
   const [data, setData] = useState([]);
   const [isQuizCompleted, setIsQuizCompleted] = useState(false);
+  const [lastAttemptedIndex, setLastAttemptedIndex] = useState(0);
   const { signupData } = useSelector((state) => state.auth);
-  // const userId = signupData.userId;
-  useEffect (() => console.log(data),[data])
-
-  useEffect(() => {
-      const fetchAttemptedSubModules = async () => {
-        try {
-          const response = await apiConnector(
-            "GET",
-            `users/analytics/answers/?googleId=${googleId}&subModuleId=${submoduleId}`
-          );
-
-          console.log(response.data, "yeh rha data");
-
-          if(response.data?.isAttempted){
-            const userResponses = response.data?.answers;
-            setAnswers(() => {
-              const pastAnswers = {};
-              userResponses.forEach((answer) => {
-                if(answer.userAnswer){pastAnswers[answer.questionId._id] = {
-                  optionId: answer.userAnswer,
-                  isCorrect: answer.isCorrect,
-                };}
-              })
-
-              return pastAnswers;
-            });
-          }
-          // console.log(response.data?.attemptedSubmodules);
-          // setAttemptedList(() => [...response.data?.attemptedSubmodules]);
-        } catch (err) {
-          console.error("Error fetching course details:", err);
-        }
-      };
-      fetchAttemptedSubModules();
-      // console.log(attemptedList, "yeh rha list");
-    }, []);
 
   const googleId = signupData.googleId;
+
+  // Question Grid Component
+  const QuestionGrid = () => {
+    const getQuestionStats = () => {
+      const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
+      const incorrectCount = Object.values(answers).filter(a => !a.isCorrect).length;
+      const unattemptedCount = data.length - (correctCount + incorrectCount);
+      
+      return {
+        correct: correctCount,
+        incorrect: incorrectCount,
+        unattempted: unattemptedCount
+      };
+    };
+
+    const stats = getQuestionStats();
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-lg">
+        <h3 className="text-lg font-bold mb-4">Questions Overview</h3>
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {data.map((question, index) => {
+            const isAnswered = answers[question._id];
+            let bgColor = "bg-blue-500" // Unattempted
+            let attempts = 0;
+  
+            if (isAnswered) {
+              bgColor = isAnswered.isCorrect ? "bg-green-500" : "bg-red-500";
+              attempts = isAnswered.attempts || 0;
+            }
+  
+            return (
+              <div key={question._id} className="relative">
+                <button
+                  onClick={() => {
+                    saveResponse();
+                    setCurrentQuestionIndex(index);
+                    setQuestionTimer(0);
+                    const savedAnswer = answers[question._id];
+                    setSelectedOption(savedAnswer?.optionId || null);
+                    setIsCorrect(savedAnswer?.isCorrect || null);
+                  }}
+                  className={`w-10 h-10 ${bgColor} text-white rounded-lg flex items-center justify-center hover:opacity-80 transition-opacity`}
+                >
+                  {index + 1}
+                </button>
+                {/* {attempts > 0 && (
+                  <span className="absolute top-0 right-0 bg-yellow-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                   
+                  </span>
+                )} */}
+              </div>
+            )
+          })}
+        </div>
+        <div className="border-t pt-4 space-y-2 text-sm">
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
+            <span>Correct: {stats.correct}</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
+            <span>Incorrect: {stats.incorrect}</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+            <span>Unattempted: {stats.unattempted}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    const fetchAttemptedSubModules = async () => {
+      try {
+        const response = await apiConnector(
+          "GET",
+          `users/analytics/answers/?googleId=${googleId}&subModuleId=${submoduleId}`
+        );
+  
+        if(response.data?.isAttempted){
+          const userResponses = response.data?.answers;
+          let lastIndex = 0;
+          
+          setAnswers(() => {
+            const pastAnswers = {};
+            userResponses.forEach((answer, index) => {
+              if(answer.userAnswer) {
+                pastAnswers[answer.questionId._id] = {
+                  optionId: answer.userAnswer,
+                  isCorrect: answer.isCorrect,
+                  attempts: 1 // Track attempts
+                };
+                
+                // If the answer was incorrect, keep track of it
+                if (!answer.isCorrect) {
+                  lastIndex = index; // Set to the last incorrect question
+                }
+              }
+            });
+            return pastAnswers;
+          });
+  
+          // Update stats based on past answers
+          const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
+          const incorrectCount = Object.keys(answers).length - correctCount;
+          
+          setStats({
+            correct: correctCount,
+            incorrect: incorrectCount
+          });
+          
+          // Prioritize returning to incorrect questions
+          const incorrectQuestionIndices = data.reduce((acc, question, index) => {
+            if (!answers[question._id]?.isCorrect) {
+              acc.push(index);
+            }
+            return acc;
+          }, []);
+  
+          // If there are incorrect questions, start from the first incorrect question
+          if (incorrectQuestionIndices.length > 0) {
+            setCurrentQuestionIndex(incorrectQuestionIndices[0]);
+          } else {
+            setLastAttemptedIndex(lastIndex);
+            setCurrentQuestionIndex(lastIndex);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching course details:", err);
+      }
+    };
+    fetchAttemptedSubModules();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +178,6 @@ const QuizInterface = () => {
           "GET",
           `/admin/submodules/${submoduleId}`
         );
-        console.log("this is the data", response.data)
         setData(response.data.submodule.questions);
         setIsLoading(false);
       } catch (err) {
@@ -93,7 +189,6 @@ const QuizInterface = () => {
     fetchData();
   }, []);
 
-  // Load saved response when changing questions
   useEffect(() => {
     if (data.length > 0) {
       const currentQuestionId = data[currentQuestionIndex]._id;
@@ -111,7 +206,6 @@ const QuizInterface = () => {
     }
   }, [currentQuestionIndex, data]);
 
-  // Timer effects
   useEffect(() => {
     let interval;
     if (isRunning) {
@@ -133,25 +227,27 @@ const QuizInterface = () => {
     const question = data[questionIndex];
     const selectedAnswer = question.options.find((opt) => opt._id === optionId);
     const correct = selectedAnswer.isCorrect;
-
-    if (!answers[question._id]) {
+  
+    // Only update stats if this is a new answer for this question
+    if (!answers[question._id] || answers[question._id].optionId !== optionId) {
       setStats((prev) => ({
         correct: prev.correct + (correct ? 1 : 0),
         incorrect: prev.incorrect + (correct ? 0 : 1),
       }));
     }
-
+  
     setIsCorrect(correct);
     setShowAnimation(true);
-
+    
     setAnswers((prev) => ({
       ...prev,
       [question._id]: {
         optionId,
         isCorrect: correct,
+        attempts: (prev[question._id]?.attempts || 0) + 1
       },
     }));
-
+  
     setTimeout(() => {
       setShowAnimation(false);
     }, 1500);
@@ -180,7 +276,6 @@ const QuizInterface = () => {
       );
 
       if (existingResponseIndex !== -1) {
-        // Update existing response
         const updatedResponses = [...prev];
         updatedResponses[existingResponseIndex] = {
           ...updatedResponses[existingResponseIndex],
@@ -188,7 +283,6 @@ const QuizInterface = () => {
         };
         return updatedResponses;
       } else {
-        // Add new response
         return [...prev, responseData];
       }
     });
@@ -199,7 +293,8 @@ const QuizInterface = () => {
       saveResponse();
       const qID = data[currentQuestionIndex]._id;
       const res = await apiConnector("POST", `/users/questions/${qID}/attempt`, {
-        subModuleId:submoduleId, userAnswer: {
+        subModuleId: submoduleId,
+        userAnswer: {
           questionId: qID,
           userAnswer: answers[qID]?.optionId || null,
           isCorrect: answers[qID]?.isCorrect || false,
@@ -207,8 +302,10 @@ const QuizInterface = () => {
           notes,
           importance,
           timestamp: new Date().toISOString(),
-        },subjectId,googleId
-      })
+        },
+        subjectId,
+        googleId
+      });
       setCurrentQuestionIndex((prev) => prev + 1);
       const nextQuestion = data[currentQuestionIndex + 1];
       const savedAnswer = answers[nextQuestion._id];
@@ -231,16 +328,12 @@ const QuizInterface = () => {
   };
 
   const prepareAnalyticsData = () => {
-    // Ensure all questions have responses
     const allResponses = data.map((question, index) => {
       const existingResponse = userResponses.find(
         (response) => response.questionId === question._id
       );
 
-      console.log("existingResponse", existingResponse);
-
       if (!existingResponse) {
-        // Create a default response for unanswered questions
         return {
           questionId: question._id,
           userAnswer: answers[question._id]?.optionId || null,
@@ -290,11 +383,11 @@ const QuizInterface = () => {
 
   const handleQuizSubmit = async () => {
     try {
-      // Save the current question's response first
       saveResponse();
       const qID = data[currentQuestionIndex]._id;
       const res = await apiConnector("POST", `/users/questions/${qID}/attempt`, {
-        subModuleId:submoduleId, userAnswer: {
+        subModuleId: submoduleId,
+        userAnswer: {
           questionId: qID,
           userAnswer: answers[qID]?.optionId || null,
           isCorrect: answers[qID]?.isCorrect || false,
@@ -302,10 +395,11 @@ const QuizInterface = () => {
           notes,
           importance,
           timestamp: new Date().toISOString(),
-        },subjectId,googleId
-      })
+        },
+        subjectId,
+        googleId
+      });
 
-      // // Make sure we have responses for all questions
       data.forEach((_, index) => {
         if (index !== currentQuestionIndex) {
           saveResponse(index);
@@ -314,7 +408,6 @@ const QuizInterface = () => {
 
       setIsRunning(false);
       const analyticsData = prepareAnalyticsData();
-      console.log(analyticsData, "analyticsData");
       const response = await apiConnector(
         "POST",
         "/users/submit-analytics",
@@ -341,163 +434,145 @@ const QuizInterface = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 relative ">
-      <div className="max-w-4xl mx-auto ">
-        <img
-          src="../../images/vectorImg2.png"
-          alt=""
-          className="absolute bottom-[10px] left-[10px] size-80 rounded-full opacity-30 lg:opacity-50"
-        />
-        {/* Timer and Stats */}
-        <div
-          className="absolute xl:top-[50px] xl:left-[50px] 
-                flex flex-row gap-5 top-[5px] left-[5px]  
-                xl:flex xl:flex-col xl:space-y-2"
-        >
+    <div className="min-h-screen bg-gray-100 p-4 lg:p-8 flex flex-col lg:flex-row ">
+      {/* Left sidebar with clock and QuestionGrid */}
+      <div className="w-full lg:w-64 mb-4 lg:mb-0 lg:mr-4">
+        <div className="flex  lg:flex-col items-center lg:items-start space-y-0 lg:space-y-4 space-x-4 lg:space-x-0">
+          {/* Clock */}
           <div className="bg-white rounded-full p-4 shadow-lg">
             <div className="text-2xl font-bold">{formatTime(timer)}</div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-lg">
-            <div className="text-green-500">Correct: {stats.correct}</div>
-            <div className="text-red-500">Incorrect: {stats.incorrect}</div>
+
+          {/* QuestionGrid */}
+          <div className="w-full lg:w-auto">
+            <QuestionGrid />
           </div>
         </div>
+      </div>
 
-        {/* Question Navigation */}
-        <div className="absolute top-1/3 right-5 space-y-4">
-          {[
-            currentQuestionIndex - 1,
-            currentQuestionIndex,
-            currentQuestionIndex + 1,
-          ].map((index, i) => (
+      {/* Main content */}
+      <div className="flex-1">
+        <div className="max-w-3xl mx-auto relative">
+          <img
+            src="../../images/vectorImg2.png"
+            alt=""
+            className="absolute bottom-[10px] left-[10px] w-40 h-40 lg:w-80 lg:h-80 rounded-full opacity-30 lg:opacity-50"
+          />
+
+          {/* Animation Overlay */}
+          {showAnimation && (
             <div
-              key={i}
-              className={`w-12 h-12 rounded-full flex items-center font-bold justify-center  ${index === currentQuestionIndex
-                ? "bg-black text-white scale-125 "
-                : "bg-gray-300 text-white"
-                }`}
+              className={`fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity ${showAnimation ? "opacity-100" : "opacity-0"}`}
             >
-              {index + 1}
+              <div className={`text-6xl lg:text-8xl animate-bounce`}>{isCorrect ? "🎉" : "😔"}</div>
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* Animation Overlay */}
-        {showAnimation && (
-          <div
-            className={`fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity ${showAnimation ? "opacity-100" : "opacity-0"
-              }`}
-          >
-            <div className={`text-8xl animate-bounce`}>
-              {isCorrect ? "🎉" : "😔"}
+          {/* Main Quiz Card */}
+          <div className="bg-white rounded-lg shadow-lg mt-4 lg:mt-16">
+            <div className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 bg-black text-white p-4 lg:p-8 rounded-t-2xl">
+              {data[currentQuestionIndex].questionText}
             </div>
-          </div>
-        )}
 
-        {/* Main Quiz Card */}
-        <div className="bg-white rounded-lg shadow-lg mt-16 ">
-          <div className="text-2xl font-bold mb-6 bg-black text-white p-8 rounded-t-2xl">
-            {data[currentQuestionIndex].questionText}
-          </div>
-          {/* Options */}
-          {/* setOptionNo(0); */}
-          <div className="space-y-3 p-4">
-            {data[currentQuestionIndex].options.map((option, index) => {
-              const currentQuestionId = data[currentQuestionIndex]._id;
-              const savedAnswer = answers[currentQuestionId];
-              const isSelected =
-                selectedOption === option._id ||
-                savedAnswer?.optionId === option._id;
-              const showCorrectness =
-                isSelected &&
-                (isCorrect !== null || savedAnswer?.isCorrect !== null);
+            {/* Options */}
+            <div className="space-y-3 p-4">
+              {data[currentQuestionIndex].options.map((option, index) => {
+                const currentQuestionId = data[currentQuestionIndex]._id
+                const savedAnswer = answers[currentQuestionId]
+                const isSelected = selectedOption === option._id || savedAnswer?.optionId === option._id
+                const showCorrectness = isSelected && (isCorrect !== null || savedAnswer?.isCorrect !== null)
 
-              return (
-                <button
-                  key={option._id}
-                  className={`w-full p-4 text-left rounded-lg border transition-all ${isSelected
-                    ? showCorrectness && (isCorrect || savedAnswer?.isCorrect)
-                      ? "bg-green-500 text-white border-green-600"
-                      : "bg-red-500 text-white border-red-600"
-                    : "bg-white hover:bg-gray-50 border-gray-300"
+                return (
+                  <button
+                    key={option._id}
+                    className={`w-full p-3 lg:p-4 text-left rounded-lg border transition-all ${
+                      isSelected
+                        ? showCorrectness && (isCorrect || savedAnswer?.isCorrect)
+                          ? "bg-green-500 text-white border-green-600"
+                          : "bg-red-500 text-white border-red-600"
+                        : "bg-white hover:bg-gray-50 border-gray-300"
                     }`}
-                  onClick={() => handleOptionSelect(option._id)}
-                  disabled={savedAnswer !== undefined}
+                    onClick={() => handleOptionSelect(option._id)}
+                    disabled={savedAnswer !== undefined}
+                  >
+                    {index + 1}.<span className="ml-2 lg:ml-4"></span>
+                    {option.optionText}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Importance Markers */}
+            <div className="flex justify-center space-x-2 lg:space-x-4 mt-4 lg:mt-6">
+              <button
+                className={`px-2 lg:px-4 py-2 rounded-lg flex items-center text-sm lg:text-base ${
+                  importance === "bad" ? "bg-red-500 text-white" : "bg-white border border-gray-300 hover:bg-gray-50"
+                }`}
+                onClick={() => setImportance("bad")}
+              >
+                <span className="mr-1 lg:mr-2">🚫</span> Bad
+              </button>
+              <button
+                className={`px-2 lg:px-4 py-2 rounded-lg flex items-center text-sm lg:text-base ${
+                  importance === "ok" ? "bg-green-500 text-white" : "bg-white border border-gray-300 hover:bg-gray-50"
+                }`}
+                onClick={() => setImportance("ok")}
+              >
+                <span className="mr-1 lg:mr-2">👍</span> OK
+              </button>
+              <button
+                className={`px-2 lg:px-4 py-2 rounded-lg flex items-center text-sm lg:text-base ${
+                  importance === "important"
+                    ? "bg-yellow-500 text-white"
+                    : "bg-white border border-gray-300 hover:bg-gray-50"
+                }`}
+                onClick={() => setImportance("important")}
+              >
+                <span className="mr-1 lg:mr-2">⭐</span> Important
+              </button>
+            </div>
+
+            {/* Notes */}
+            <div className="p-4">
+              <textarea
+                placeholder="Add your notes here..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full mt-4 lg:mt-6 p-3 lg:p-5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={4}
+              />
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between w-full mt-2">
+              <button
+                className={`px-4 lg:px-6 w-full py-3 lg:py-4 rounded-lg justify-center font-bold flex items-center text-sm lg:text-base ${
+                  currentQuestionIndex === 0
+                    ? "bg-gray-200 text-gray-700 cursor-not-allowed"
+                    : "bg-gray-300 border border-gray-500 hover:bg-gray-50"
+                }`}
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+              >
+                ← Previous
+              </button>
+              {currentQuestionIndex === data.length - 1 ? (
+                <button
+                  className="px-4 lg:px-6 py-3 lg:py-4 w-full justify-center font-bold rounded-lg flex items-center bg-green-600 text-white hover:bg-green-700 text-sm lg:text-base"
+                  onClick={handleQuizSubmit}
+                  disabled={isQuizCompleted}
                 >
-                  {index + 1}.<span className="ml-4"></span>
-                  {option.optionText}
+                  {isQuizCompleted ? "Submitted!" : "Submit Quiz"}
                 </button>
-              );
-            })}
-          </div>
-          {/* Importance Markers */}
-          <div className="flex justify-center space-x-4 mt-6">
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center ${importance === "bad"
-                ? "bg-red-500 text-white"
-                : "bg-white border border-gray-300 hover:bg-gray-50"
-                }`}
-              onClick={() => setImportance("bad")}
-            >
-              <span className="mr-2">🚫</span> Bad
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center ${importance === "ok"
-                ? "bg-green-500 text-white"
-                : "bg-white border border-gray-300 hover:bg-gray-50"
-                }`}
-              onClick={() => setImportance("ok")}
-            >
-              <span className="mr-2">👍</span> OK
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg flex items-center ${importance === "important"
-                ? "bg-yellow-500 text-white"
-                : "bg-white border border-gray-300 hover:bg-gray-50"
-                }`}
-              onClick={() => setImportance("important")}
-            >
-              <span className="mr-2">⭐</span> Important
-            </button>
-          </div>
-          {/* Notes */}
-          <div className="p-4">
-            <textarea
-              placeholder="Add your notes here..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full mt-6 p-5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={4}
-            />
-          </div>
-          {/* Navigation Buttons */}
-          <div className="flex justify-between w-full mt-2">
-            <button
-              className={`px-6 w-full py-4 rounded-lg justify-center font-bold flex items-center ${currentQuestionIndex === 0
-                ? "bg-gray-200 text-gray-700 cursor-not-allowed"
-                : "bg-gray-300 border border-gray-500 hover:bg-gray-50"
-                }`}
-              onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0}
-            >
-              ← Previous
-            </button>
-            {currentQuestionIndex === data.length - 1 ? (
-              <button
-                className="px-6 py-4 w-full justify-center font-bold rounded-lg flex items-center bg-green-600 text-white hover:bg-green-700"
-                onClick={handleQuizSubmit}
-                disabled={isQuizCompleted}
-              >
-                {isQuizCompleted ? "Submitted!" : "Submit Quiz"}
-              </button>
-            ) : (
-              <button
-                className="px-6 py-4 w-full justify-center font-bold rounded-lg flex items-center bg-black text-white hover:bg-gray-900"
-                onClick={handleNext}
-              >
-                Next →
-              </button>
-            )}
+              ) : (
+                <button
+                  className="px-4 lg:px-6 py-3 lg:py-4 w-full justify-center font-bold rounded-lg flex items-center bg-black text-white hover:bg-gray-900 text-sm lg:text-base"
+                  onClick={handleNext}
+                >
+                  Next →
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
