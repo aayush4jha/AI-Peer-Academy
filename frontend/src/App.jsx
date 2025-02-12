@@ -97,6 +97,7 @@ function App() {
           path="/admin/courses/modules/:moduleName"
           element={<SubModuleList />}
         />
+        <Route path="/" element={<Homepage />} /> 
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/payment" element={<PaymentForm />} />
         <Route path="/payment-success" element={<PaymentSuccessPage />} />
