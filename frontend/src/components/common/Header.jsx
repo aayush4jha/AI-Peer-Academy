@@ -50,10 +50,10 @@ function Header() {
   const AuthButtons = () => (
     <>
       {!signupData && (
-        <div className="md:w-24 max-w-max">
-          <GoogleSignInButton text="Login" />
+        <div className="w-full md:w-32 flex justify-center">
+          <GoogleSignInButton />
         </div>
-      )}
+      )}  
       {signupData && (
         <button
           className="w-full md:w-auto bg-teal-400 text-slate-900 px-4 py-2 rounded-md hover:bg-teal-500 transition-colors"
@@ -113,9 +113,9 @@ function Header() {
     Contact
   </Link>
   <div className="flex items-center gap-x-4 flex-wrap">
-    <AuthButtons />
-    <MembershipButton />
-  </div>
+  <AuthButtons />
+  <MembershipButton />
+</div>
 </nav>
 
 
