@@ -103,21 +103,21 @@ function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="hover:text-teal-400 transition-colors">
-              Home
-            </Link>
-            <a href="#" className="hover:text-teal-400 transition-colors">
-              About
-            </a>
-            <Link
-              to="/contact"
-              className="hover:text-teal-400 transition-colors"
-            >
-              Contact
-            </Link>
-            <AuthButtons />
-            <MembershipButton />
-          </nav>
+  <Link to="/" className="hover:text-teal-400 transition-colors">
+    Home
+  </Link>
+  <a href="#" className="hover:text-teal-400 transition-colors">
+    About
+  </a>
+  <Link to="/contact" className="hover:text-teal-400 transition-colors">
+    Contact
+  </Link>
+  <div className="flex items-center gap-x-4 flex-wrap">
+    <AuthButtons />
+    <MembershipButton />
+  </div>
+</nav>
+
 
           {/* Mobile Menu Button */}
           <button
