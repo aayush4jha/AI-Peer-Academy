@@ -1,9 +1,9 @@
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
 
-dotenv.config();
+// dotenv.config();
 
 // Google OAuth Client to verify the token
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
